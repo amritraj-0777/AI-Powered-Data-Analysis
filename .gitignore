@@ -1,0 +1,27 @@
+# Data file (download separately from UCI ML Repository)
+Online Retail.xlsx
+*.xlsx
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE (optional: remove if you want to share these)
+.idea/
+.vscode/
+*.swp
+*.swo
