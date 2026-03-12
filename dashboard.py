@@ -43,13 +43,6 @@ if not DATA_FILE.exists():
 st.sidebar.divider()
 page = st.sidebar.radio("Page", ["Business Overview", "Customer RFM Analysis"], index=0)
 
-# Sidebar image: analytics/data theme (free Unsplash)
-st.sidebar.image(
-    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&q=80",
-    caption="Data-driven decisions",
-    use_container_width=True,
-)
-
 st.markdown("""
 <style>
   /* Main area: warmer, less white - soft blue-grey tint */
@@ -57,11 +50,12 @@ st.markdown("""
   /* Blocks/cards: subtle background so content isn't on raw white */
   .stPlotlyChart, [data-testid="stExpander"] { background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 1px 8px rgba(30,58,95,0.08); }
   div[data-testid="stExpander"] > div { background: #ffffff !important; border-radius: 10px !important; }
-  /* Sidebar */
-  [data-testid="stSidebar"] { background: linear-gradient(180deg, #1e3a5f 0%, #2d5a87 50%, #1a365d 100%); }
-  [data-testid="stSidebar"] .stMarkdown { color: #e2e8f0 !important; }
-  [data-testid="stSidebar"] label { color: #e2e8f0 !important; }
-  [data-testid="stSidebar"] .stCaptionContainer { color: #94a3b8 !important; }
+  /* Sidebar: lighter blue, better contrast for text */
+  [data-testid="stSidebar"] { background: linear-gradient(180deg, #3b5998 0%, #5a7ab8 50%, #4a6fa5 100%); }
+  [data-testid="stSidebar"] .stMarkdown { color: #ffffff !important; font-weight: 500 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+  [data-testid="stSidebar"] label { color: #ffffff !important; font-weight: 600 !important; }
+  [data-testid="stSidebar"] .stCaptionContainer { color: #e8eef7 !important; font-weight: 500 !important; }
+  [data-testid="stSidebar"] p { color: #f1f5f9 !important; }
   /* Hero banner */
   .hero-banner { background: linear-gradient(135deg, #1e3a5f 0%, #3b82f6 50%, #6366f1 100%); color: white; padding: 1.25rem 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 4px 14px rgba(30,58,95,0.25); }
   .hero-banner h1 { color: white !important; margin: 0 !important; font-size: 1.75rem !important; }
