@@ -1,22 +1,25 @@
 """
 2-page Streamlit dashboard: Business Overview + Customer RFM Analysis.
 Data: Online Retail.xlsx (same folder as this file).
-Run: streamlit run dashboard.py --server.port 8502
+Run locally: streamlit run dashboard.py --server.port 8502
+Deploy: Push to GitHub, then deploy on share.streamlit.io (one link for everyone).
 """
 import sys
 import os
 from pathlib import Path
 from datetime import timedelta
 
-if __name__ == "__main__" and not os.environ.get("STREAMLIT_SERVER_IS_RUNNING"):
-    import subprocess
-    _script = Path(__file__).resolve()
-    subprocess.Popen(
-        [sys.executable, "-m", "streamlit", "run", str(_script), "--server.port", "8502"],
-        cwd=str(_script.parent),
-    )
-    print("\n  Dashboard: http://localhost:8502\n")
-    sys.exit(0)
+# Only auto-launch Streamlit when run as "python dashboard.py" (not when "streamlit run dashboard.py" is used)
+if __name__ == "__main__":
+    if "streamlit" not in " ".join(sys.argv).lower():
+        import subprocess
+        _script = Path(__file__).resolve()
+        subprocess.Popen(
+            [sys.executable, "-m", "streamlit", "run", str(_script), "--server.port", "8502"],
+            cwd=str(_script.parent),
+        )
+        print("\n  Dashboard: http://localhost:8502\n")
+        sys.exit(0)
 
 import streamlit as st
 import pandas as pd
