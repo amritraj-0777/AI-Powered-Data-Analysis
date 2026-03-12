@@ -228,11 +228,14 @@ else:
     rfm_country = rfm_df.merge(customer_country, on="CustomerID", how="left")
     customer_ids = sorted(rfm_country["CustomerID"].astype(str).tolist())
 
+    # Default to customer 12524 when the page opens (they have 8 transactions — charts look good)
+    DEFAULT_CUSTOMER_ID = "12524"
     search = st.sidebar.text_input("Search Customer ID", placeholder="e.g. 12347")
     options = [c for c in customer_ids if search in c] if search else customer_ids
     if not options:
         options = customer_ids
-    selected_str = st.sidebar.selectbox("Select customer", options, key="cust_sel")
+    default_index = options.index(DEFAULT_CUSTOMER_ID) if DEFAULT_CUSTOMER_ID in options else 0
+    selected_str = st.sidebar.selectbox("Select customer", options, index=default_index, key="cust_sel")
     try:
         selected_id = int(selected_str)
     except (ValueError, TypeError):
