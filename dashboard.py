@@ -9,9 +9,9 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
-# Only auto-launch Streamlit when run as "python dashboard.py" (not when "streamlit run dashboard.py" is used)
+# Only auto-launch Streamlit when run as "python dashboard.py" on your PC (not when "streamlit run dashboard.py" is used on Cloud)
 if __name__ == "__main__":
-    if "streamlit" not in " ".join(sys.argv).lower():
+    if "streamlit" not in sys.modules:
         import subprocess
         _script = Path(__file__).resolve()
         subprocess.Popen(
@@ -31,25 +31,27 @@ DATA_FILE = BASE_DIR / "Online Retail.xlsx"
 
 st.set_page_config(page_title="Retail Analytics", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
 
+# Show something immediately so the page is never blank (helps on Streamlit Cloud)
+st.sidebar.title("📊 Retail Analytics")
+st.sidebar.caption("RFM dashboard · Data: UCI Online Retail")
+
+if not DATA_FILE.exists():
+    st.error(f"Data file not found. Put **Online Retail.xlsx** in the same folder as `dashboard.py`.")
+    st.info(f"Expected path: `{DATA_FILE}`")
+    st.stop()
+
+st.sidebar.divider()
+page = st.sidebar.radio("Page", ["Business Overview", "Customer RFM Analysis"], index=0)
+
 st.markdown("""
 <style>
   .metric-card { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); color: white; padding: 1rem 1.5rem; border-radius: 12px; margin: 0.5rem 0; }
 </style>
 """, unsafe_allow_html=True)
 
-if not DATA_FILE.exists():
-    st.error(f"Data file not found. Put **Online Retail.xlsx** in: `{BASE_DIR}`")
-    st.stop()
-
-# Show sidebar and loading message immediately so the page is not blank while data loads
-st.sidebar.title("📊 Retail Analytics")
-st.sidebar.caption("Open in browser: **http://localhost:8502**")
-st.sidebar.divider()
-page = st.sidebar.radio("Page", ["Business Overview", "Customer RFM Analysis"], index=0)
-
 loading_placeholder = st.empty()
 with loading_placeholder.container():
-    st.info("⏳ **Loading data…** First load may take 1–2 minutes for large Excel files. Please wait.")
+    st.info("⏳ **Loading data…** First load may take 1–2 minutes. Please wait.")
 
 @st.cache_data
 def load_and_clean():
