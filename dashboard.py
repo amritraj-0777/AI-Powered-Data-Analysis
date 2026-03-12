@@ -45,7 +45,23 @@ page = st.sidebar.radio("Page", ["Business Overview", "Customer RFM Analysis"], 
 
 st.markdown("""
 <style>
-  .metric-card { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); color: white; padding: 1rem 1.5rem; border-radius: 12px; margin: 0.5rem 0; }
+  /* Main area: soft tint */
+  .stApp { background: linear-gradient(180deg, #f0f4ff 0%, #fafbff 30%, #fff 100%); }
+  /* Sidebar */
+  [data-testid="stSidebar"] { background: linear-gradient(180deg, #1e3a5f 0%, #2d5a87 50%, #1a365d 100%); }
+  [data-testid="stSidebar"] .stMarkdown { color: #e2e8f0 !important; }
+  [data-testid="stSidebar"] label { color: #e2e8f0 !important; }
+  [data-testid="stSidebar"] .stCaptionContainer { color: #94a3b8 !important; }
+  /* Hero banner for page title */
+  .hero-banner { background: linear-gradient(135deg, #1e3a5f 0%, #3b82f6 50%, #6366f1 100%); color: white; padding: 1.25rem 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 4px 14px rgba(30,58,95,0.25); }
+  .hero-banner h1 { color: white !important; margin: 0 !important; font-size: 1.75rem !important; }
+  .hero-banner p { color: rgba(255,255,255,0.95) !important; margin: 0.35rem 0 0 0 !important; font-size: 0.95rem !important; }
+  /* Section headers with colored accent */
+  .section-head { color: #1e3a5f; font-weight: 700; padding-left: 12px; border-left: 4px solid #3b82f6; margin: 1.5rem 0 0.75rem 0; }
+  /* Catchy callout boxes */
+  .callout { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 4px solid #2563eb; padding: 1rem 1.25rem; border-radius: 0 10px 10px 0; margin: 1rem 0; font-size: 0.95rem; }
+  .callout-success { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-left-color: #059669; }
+  .metric-card { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); color: white; padding: 1rem 1.5rem; border-radius: 12px; margin: 0.5rem 0; box-shadow: 0 2px 10px rgba(30,58,95,0.2); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -123,8 +139,12 @@ loading_placeholder.empty()
 
 # --------------- PAGE 1: Business Overview ---------------
 if page == "Business Overview":
-    st.title("Business Overview")
-    st.markdown("Revenue, customers, AOV, return rate, trends, geography, product performance (from retail_data_analysis).")
+    st.markdown("""
+    <div class="hero-banner">
+      <h1>📈 Business Overview</h1>
+      <p>Revenue at a glance · Where the money comes from · Trends, geography & top products</p>
+    </div>
+    """, unsafe_allow_html=True)
 
     total_rev = clean["Revenue"].sum()
     n_cust = clean["CustomerID"].nunique()
@@ -142,7 +162,9 @@ if page == "Business Overview":
     c4.metric("AOV", f"£{aov:,.2f}")
     c5.metric("Return/Cancel rate", f"{return_rate:.1f}%")
 
-    st.divider()
+    st.markdown('<p class="callout"><strong>💡 At a glance:</strong> Use these numbers to track performance and spot trends. Revenue and AOV drive planning; return rate highlights fulfilment quality.</p>', unsafe_allow_html=True)
+
+    st.markdown('<p class="section-head">📊 Revenue trend (monthly)</p>', unsafe_allow_html=True)
     clean_t = clean.copy()
     clean_t["YearMonth"] = clean_t["InvoiceDate"].dt.to_period("M").astype(str)
     trends = clean_t.groupby("YearMonth").agg(Revenue=("Revenue", "sum"), Orders=("InvoiceNo", "nunique")).reset_index()
@@ -150,6 +172,7 @@ if page == "Business Overview":
     fig_t.update_layout(yaxis_tickformat="£,.0f", xaxis_tickangle=-45)
     st.plotly_chart(fig_t, use_container_width=True)
 
+    st.markdown('<p class="section-head">🌍 Geography & products</p>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
         order_val = clean.groupby("InvoiceNo").agg(OrderRev=("Revenue", "sum")).reset_index()
@@ -174,8 +197,12 @@ if page == "Business Overview":
 
 # --------------- PAGE 2: Customer RFM Analysis ---------------
 else:
-    st.title("Customer RFM Analysis")
-    st.markdown("Look up a customer: segment, recommendations, profile (from rfm_analysis).")
+    st.markdown("""
+    <div class="hero-banner">
+      <h1>🎯 Customer RFM Analysis</h1>
+      <p>Recency · Frequency · Monetary · Segment any customer and see the next best action</p>
+    </div>
+    """, unsafe_allow_html=True)
 
     customer_country = clean.groupby("CustomerID")["Country"].first().reset_index()
     rfm_country = rfm_df.merge(customer_country, on="CustomerID", how="left")
@@ -211,9 +238,7 @@ else:
     }
     rec_text = RECOMMENDATIONS.get(segment, "Review segment and define action.")
 
-    st.subheader(f"Customer **{selected_id}**")
-    st.markdown(f"**Segment:** **{segment}**")
-    st.info(f"**Recommendation:** {rec_text}")
+    st.markdown(f'<p class="callout callout-success"><strong>👤 Customer {selected_id}</strong> · Segment: <strong>{segment}</strong><br><strong>Recommendation:</strong> {rec_text}</p>', unsafe_allow_html=True)
 
     cust_orders = clean[clean["CustomerID"] == selected_id]
     if cust_orders.empty:
@@ -228,7 +253,7 @@ else:
     aov_c = total_rev_c / n_txn if n_txn else 0
 
     st.divider()
-    st.subheader("Customer profile")
+    st.markdown('<p class="section-head">📋 Customer profile</p>', unsafe_allow_html=True)
     p1, p2, p3 = st.columns(3)
     p1.metric("Country", country)
     p2.metric("First purchase", first_p.strftime("%Y-%m-%d"))
@@ -238,14 +263,14 @@ else:
     f2.metric("AOV", f"£{aov_c:,.2f}")
     f3.metric("Transactions", n_txn)
 
-    st.subheader("Top products purchased")
+    st.markdown('<p class="section-head">🛒 Top products purchased</p>', unsafe_allow_html=True)
     prod_df = cust_orders.groupby("Description").agg(Revenue=("Revenue", "sum"), Qty=("Quantity", "sum")).reset_index().sort_values("Revenue", ascending=False).head(12)
     prod_df["Desc"] = prod_df["Description"].fillna("").astype(str).str[:40]
     fig_top = px.bar(prod_df, x="Revenue", y="Desc", orientation="h", color="Revenue", color_continuous_scale="Viridis")
     fig_top.update_layout(showlegend=False, xaxis_tickformat="£,.0f", yaxis=dict(autorange="reversed"), height=400)
     st.plotly_chart(fig_top, use_container_width=True)
 
-    st.subheader("Spend by product category (first word)")
+    st.markdown('<p class="section-head">🥧 Spend by product category</p>', unsafe_allow_html=True)
     cust_copy = cust_orders.copy()
     cust_copy["Category"] = cust_copy["Description"].str.split().str[0].fillna("Other")
     cat_df = cust_copy.groupby("Category")["Revenue"].sum().reset_index().sort_values("Revenue", ascending=False).head(10)
@@ -256,5 +281,3 @@ else:
     with st.expander("RFM scores"):
         st.write(f"**Recency:** {int(cust['Recency'])} days | **Frequency:** {int(cust['Frequency'])} | **Monetary:** £{cust['Monetary']:,.2f}")
         st.write(f"R_Score={int(cust['R_Score'])}, F_Score={int(cust['F_Score'])}, M_Score={int(cust['M_Score'])}")
-
-st.sidebar.success("Dashboard ready · http://localhost:8502")
