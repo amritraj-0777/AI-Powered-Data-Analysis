@@ -43,25 +43,37 @@ if not DATA_FILE.exists():
 st.sidebar.divider()
 page = st.sidebar.radio("Page", ["Business Overview", "Customer RFM Analysis"], index=0)
 
+# Sidebar image: analytics/data theme (free Unsplash)
+st.sidebar.image(
+    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&q=80",
+    caption="Data-driven decisions",
+    use_container_width=True,
+)
+
 st.markdown("""
 <style>
-  /* Main area: soft tint */
-  .stApp { background: linear-gradient(180deg, #f0f4ff 0%, #fafbff 30%, #fff 100%); }
+  /* Main area: warmer, less white - soft blue-grey tint */
+  .stApp { background: linear-gradient(180deg, #e8eef7 0%, #dbe4f0 25%, #e2eaf4 60%, #edf1f7 100%); }
+  /* Blocks/cards: subtle background so content isn't on raw white */
+  .stPlotlyChart, [data-testid="stExpander"] { background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 1px 8px rgba(30,58,95,0.08); }
+  div[data-testid="stExpander"] > div { background: #ffffff !important; border-radius: 10px !important; }
   /* Sidebar */
   [data-testid="stSidebar"] { background: linear-gradient(180deg, #1e3a5f 0%, #2d5a87 50%, #1a365d 100%); }
   [data-testid="stSidebar"] .stMarkdown { color: #e2e8f0 !important; }
   [data-testid="stSidebar"] label { color: #e2e8f0 !important; }
   [data-testid="stSidebar"] .stCaptionContainer { color: #94a3b8 !important; }
-  /* Hero banner for page title */
+  /* Hero banner */
   .hero-banner { background: linear-gradient(135deg, #1e3a5f 0%, #3b82f6 50%, #6366f1 100%); color: white; padding: 1.25rem 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 4px 14px rgba(30,58,95,0.25); }
   .hero-banner h1 { color: white !important; margin: 0 !important; font-size: 1.75rem !important; }
   .hero-banner p { color: rgba(255,255,255,0.95) !important; margin: 0.35rem 0 0 0 !important; font-size: 0.95rem !important; }
-  /* Section headers with colored accent */
+  /* Section headers */
   .section-head { color: #1e3a5f; font-weight: 700; padding-left: 12px; border-left: 4px solid #3b82f6; margin: 1.5rem 0 0.75rem 0; }
-  /* Catchy callout boxes */
+  /* Callouts */
   .callout { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 4px solid #2563eb; padding: 1rem 1.25rem; border-radius: 0 10px 10px 0; margin: 1rem 0; font-size: 0.95rem; }
   .callout-success { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-left-color: #059669; }
   .metric-card { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); color: white; padding: 1rem 1.5rem; border-radius: 12px; margin: 0.5rem 0; box-shadow: 0 2px 10px rgba(30,58,95,0.2); }
+  /* Table container: card style, no harsh white */
+  .stDataFrame { background: #fff !important; border-radius: 10px !important; box-shadow: 0 1px 6px rgba(0,0,0,0.06) !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -146,6 +158,15 @@ if page == "Business Overview":
     </div>
     """, unsafe_allow_html=True)
 
+    # Main content image: retail/analytics theme
+    img_col1, img_col2, img_col3 = st.columns([1, 2, 1])
+    with img_col2:
+        st.image(
+            "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
+            caption="Retail analytics · UCI Online Retail",
+            use_container_width=True,
+        )
+
     total_rev = clean["Revenue"].sum()
     n_cust = clean["CustomerID"].nunique()
     n_orders = clean["InvoiceNo"].nunique()
@@ -192,8 +213,13 @@ if page == "Business Overview":
     with st.expander("Geographic table (revenue, orders, AOV by country)"):
         geo_full = order_val.groupby("Country").agg(Revenue=("OrderRev", "sum"), Orders=("InvoiceNo", "nunique")).reset_index()
         geo_full["AvgOrderValue"] = geo_full["Revenue"] / geo_full["Orders"]
-        geo_full = geo_full.sort_values("Revenue", ascending=False)
-        st.dataframe(geo_full.style.format({"Revenue": "£{:,.2f}", "AvgOrderValue": "£{:,.2f}"}), use_container_width=True)
+        geo_full = geo_full.sort_values("Revenue", ascending=False).reset_index(drop=True)
+        geo_full.insert(0, "Rank", range(1, len(geo_full) + 1))
+        st.dataframe(
+            geo_full.style.format({"Revenue": "£{:,.2f}", "AvgOrderValue": "£{:,.2f}"}),
+            use_container_width=True,
+            hide_index=True,
+        )
 
 # --------------- PAGE 2: Customer RFM Analysis ---------------
 else:
